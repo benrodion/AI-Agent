@@ -5,6 +5,7 @@ Repository where I document the progress of my AI-agent prototpye.
 
 ---
 # Repo Structure
+```
 AI-Agent-POC/
 ├── data/
 │   └── RAG_docs/
@@ -12,7 +13,7 @@ AI-Agent-POC/
     ├── agent/
     ├── rag/
     └── rag_eval/
-
+```
 ---
 ## Purpose
 
