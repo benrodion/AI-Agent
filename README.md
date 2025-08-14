@@ -14,6 +14,12 @@ AI-Agent-POC/
     ├── rag/
     └── rag_eval/
 ```
+To run the repo on your local machine, clone it and install the packages from the requirements.txt
+Make sure to set up your own .env-file at the root-level, which contains:  
+- your OpenAI API-key (or that for your LLM of choice - which LLM you use can be swapped out)
+- your OpenAI-endpoint
+- your OpenAI model
+- a password for the Wallet
 ---
 ## Purpose
 
@@ -82,7 +88,3 @@ sequenceDiagram
   RAGEvaluator-->>Caller: { answer: {...}, retrieval: {...} }
 ```
 
-## Data Model (Key Types)
-
-- `EvalExample { query, ground_truth_answer, generated_answer, retrieved_texts[] }`
-- `ClaimVerdict { claim, verdict, rationale, doc_indices? }`
