@@ -4,6 +4,16 @@ Repository where I document the progress of my AI-agent prototpye.
 > Version: 0.1 • Status: Draft
 
 ---
+# Repo Structure
+AI-Agent-POC/
+├── data/
+│   └── RAG_docs/
+└── src/
+    ├── agent/
+    ├── rag/
+    └── rag_eval/
+
+---
 ## Purpose
 
 1) Create a prototype for an AI-agent that can autonomously call tools and has integrated RAG-functionality.
