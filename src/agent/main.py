@@ -25,13 +25,13 @@ client = AzureOpenAI(
     api_version=api_version
 )
 
-def food_agent(max_steps=20):
+def food_agent(max_steps=20, user_inputs: str=""):
     messages = [
       {"role":"system","content":dedent(system_prompt)}
     ]
 
     # first user turn
-    user_input = input("🍕 Fooder: Welcome to Fooder! How can I assist you?")
+    #user_input = user_input
 
     # base case: user quits
     if not user_input or user_input.lower().strip() in ("quit","exit", "bye"):
