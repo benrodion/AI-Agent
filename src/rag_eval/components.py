@@ -4,8 +4,8 @@
 # Both components are just system prompts which forward their specific inputs to the AzureClient
 # Based on the prompt, the AzureClient outputs the desired JSON for parsing
 # ClaimExtractor parses JSON to list, EntailmentJudge to dictionary 
-from helpers import _safe_json
-from protocol import LLMClient
+from rag_eval.helpers import _safe_json
+from rag_eval.protocol import LLMClient
 from typing import List, Tuple
 
 class ClaimExtractor:

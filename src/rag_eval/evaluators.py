@@ -2,8 +2,8 @@
 # Evaluators
 # -----------------------------
 from typing import Dict, List, Any
-from data_models import EvalContainer, ClaimVerdict
-from components import ClaimExtractor, EntailmentJudge
+from rag_eval.data_models import EvalContainer, ClaimVerdict
+from rag_eval.components import ClaimExtractor, EntailmentJudge
 
 class AnswerPrecisionEvaluator:
     """

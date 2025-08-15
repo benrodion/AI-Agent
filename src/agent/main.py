@@ -1,5 +1,6 @@
-from tools import tools
-from prompts import system_prompt
+from agent.tools import tools
+from agent.prompts import system_prompt
+import agent.helpers as helpers
 from textwrap import dedent
 from openai import AzureOpenAI
 import json
@@ -62,13 +63,13 @@ def food_agent(max_steps=20):
 
                 # 2) we have all args -->  actually run the function
                 if name=="get_wallet_balance":
-                    result = get_wallet_balance(**args)
+                    result = helpers.get_wallet_balance(**args)
                 elif name=="top_up_wallet":
-                    result = top_up_wallet(**args)
+                    result = helpers.top_up_wallet(**args)
                 elif name=="order_food":
-                    result = order_food(**args)
+                    result = helpers.order_food(**args)
                 elif name=="execute_rag":
-                    result = execute_rag(**args)
+                    result = helpers.execute_rag(**args)
                 else:
                     result = {"error":"unknown function"}
 

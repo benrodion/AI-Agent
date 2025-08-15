@@ -1,11 +1,11 @@
-from .protocol import LLMClient
-from .client import AzureClient
-from .components import ClaimExtractor, EntailmentJudge
-from .data_models import EvalExample, ClaimVerdict
-from .evaluators import AnswerPrecisionEvaluator, RetrievalPrecisionEvaluator
-from .coordinator import RAGEvaluator
-
 from __future__ import annotations
+from rag_eval.protocol import LLMClient
+from rag_eval.client import AzureClient
+from rag_eval.components import ClaimExtractor, EntailmentJudge
+from rag_eval.data_models import EvalContainer, ClaimVerdict
+from rag_eval.evaluators import AnswerPrecisionEvaluator, RetrievalPrecisionEvaluator
+from rag_eval.coordinator import RAGEvaluator
+from rag_eval.helpers import _safe_json
 
 """
 RAG Evaluation Library
@@ -38,4 +38,5 @@ __all__ = [
     "AnswerPrecisionEvaluator",
     "RetrievalPrecisionEvaluator",
     "RAGEvaluator",
+    "helpers"
 ]

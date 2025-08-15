@@ -6,7 +6,7 @@ from haystack.components.generators import AzureOpenAIGenerator
 from haystack.components.retrievers import InMemoryEmbeddingRetriever
 from haystack.utils.auth import Secret
 from haystack import Pipeline
-from indexing import embedding_model, document_store
+from rag.indexing import embedding_model, document_store
 
 
 # for client
