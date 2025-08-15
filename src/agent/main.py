@@ -25,7 +25,7 @@ client = AzureOpenAI(
     api_version=api_version
 )
 
-def food_agent(max_steps=20, user_inputs: str=""):
+def food_agent(max_steps=20, user_input: str=""):
     messages = [
       {"role":"system","content":dedent(system_prompt)}
     ]
