@@ -1,11 +1,11 @@
 # -----------------------------
 # Coordinator 
 # -----------------------------
-from protocol import LLMClient
-from client import AzureClient
-from data_models import EvalContainer, ClaimVerdict
-from components import EntailmentJudge, ClaimExtractor
-from evaluators import AnswerPrecisionEvaluator, RetrievalPrecisionEvaluator
+from rag_eval.protocol import LLMClient
+from rag_eval.client import AzureClient
+from rag_eval.data_models import EvalContainer, ClaimVerdict
+from rag_eval.components import EntailmentJudge, ClaimExtractor
+from rag_eval.evaluators import AnswerPrecisionEvaluator, RetrievalPrecisionEvaluator
 from typing import Dict, Any
 
 
