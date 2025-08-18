@@ -65,8 +65,8 @@ def top_up_wallet(amount: float, password: str):
 # wrapper function for RAG
 from rag.retrieval import basic_rag
 
-def execute_rag(question):
-    print("Invoked RAG!")
+def execute__plain_rag(question):
+    print("Invoked plain RAG!")
     result = basic_rag.run({"query_embedder": {"text":question},
                             "prompt_builder":{"question":question}},
                             include_outputs_from="retriever")
@@ -85,3 +85,30 @@ def execute_rag(question):
     ]
 
     return serialized
+
+def execute_agentic_rag(question: str):
+    """
+    A modified version of execute_plain_rag. 
+
+        Parameters:
+            question: a string
+
+        Returns:
+            generated_answer: a string 
+            context: a list of strings with the retrieved context for eqch question.
+
+    """
+    print("Invoked agentic RAG!")
+    generated_answers = []
+    retrieved_context = []
+    result = basic_rag.run({"query_embedder": {"text":question},
+                            "prompt_builder":{"question":question}},
+                            include_outputs_from="retriever")
+    
+    generated_answers.append(result["llm"]["replies"][0])
+
+    # for each question, store content from Document-object in list
+    docs = result["retriever"]["documents"]
+    retrieved_context.append([d.content for d in docs])
+
+    return generated_answers, retrieved_context

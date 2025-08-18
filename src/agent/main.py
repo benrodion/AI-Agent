@@ -25,7 +25,8 @@ client = AzureOpenAI(
     api_version=api_version
 )
 
-def food_agent(max_steps=20, user_input: str=""):
+
+def food_agent(max_steps=20, *, user_input: str=""): # pass user_input as keyword arg
     messages = [
       {"role":"system","content":dedent(system_prompt)}
     ]
@@ -68,8 +69,9 @@ def food_agent(max_steps=20, user_input: str=""):
                     result = helpers.top_up_wallet(**args)
                 elif name=="order_food":
                     result = helpers.order_food(**args)
-                elif name=="execute_rag":
-                    result = helpers.execute_rag(**args)
+                elif name=="execute_agentic_rag":
+                    result = helpers.execute_agentic_rag(**args)
+                    return result
                 else:
                     result = {"error":"unknown function"}
 
@@ -95,11 +97,11 @@ def food_agent(max_steps=20, user_input: str=""):
 
         # no no more tool calls invoked by thinking-step --> text-response 
         print("🍕 Fooder:", msg.content)
-
+        break   # just for the RAG-loop: agent either returns RAG results and exits loop, or generates answer autonomously and then breaks
         # otherwise get another user turn
         nxt = input("YOU: ")
         if nxt.lower() in ("quit","exit"):
             print("🍕 Fooder: Goodbye 🍕"); return
         messages.append({"role":"user","content":nxt})
-
-    print("⚠️  Reached max steps without a final answer.")
+    
+    #print("⚠️  Reached max steps without a final answer.")

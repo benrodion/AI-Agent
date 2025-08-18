@@ -73,7 +73,7 @@ tools: List[Dict[str, Any]] = [
     {
         "type": "function",
         "function": {
-            "name": "execute_rag",
+            "name": "execute_agentic_rag",
             "description": "Makes it possible to retrieve documents like restaurant menus as well as additional information on a country's cuisine.",
             "parameters": {
                 "type": "object",

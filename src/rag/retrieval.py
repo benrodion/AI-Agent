@@ -7,6 +7,7 @@ from haystack.components.retrievers import InMemoryEmbeddingRetriever
 from haystack.utils.auth import Secret
 from haystack import Pipeline
 from rag.indexing import embedding_model, document_store
+from haystack.components.preprocessors import DocumentCleaner
 
 
 # for client
@@ -43,7 +44,6 @@ Context:
     Answer:
 
 """
-
 # initiate retrieval pipeline
 basic_rag = Pipeline()
 
@@ -63,3 +63,4 @@ basic_rag.add_component("llm", AzureOpenAIGenerator(
 basic_rag.connect("query_embedder", "retriever.query_embedding")
 basic_rag.connect("retriever", "prompt_builder.documents")
 basic_rag.connect("prompt_builder", "llm")
+
