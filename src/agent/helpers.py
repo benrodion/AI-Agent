@@ -65,7 +65,7 @@ def top_up_wallet(amount: float, password: str):
 # wrapper function for RAG
 from rag.retrieval import basic_rag
 
-def execute__plain_rag(question):
+def execute_plain_rag(question):
     print("Invoked plain RAG!")
     result = basic_rag.run({"query_embedder": {"text":question},
                             "prompt_builder":{"question":question}},
