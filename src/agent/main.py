@@ -59,6 +59,7 @@ def food_agent(max_steps=20, *, user_input: str=""): # pass user_input as keywor
         if msg.tool_calls:
             # handle each call in order
             for call in msg.tool_calls:
+                print("TOOL CALL ▶", call.function.name, call.function.arguments)
                 name = call.function.name   # get function name
                 args = json.loads(call.function.arguments or "{}")  # get function args
 
