@@ -72,6 +72,7 @@ def food_agent(max_steps=20, *, user_input: str=""): # pass user_input as keywor
                     result = helpers.order_food(**args)
                 elif name=="execute_agentic_rag":
                     result = helpers.execute_agentic_rag(**args)
+                    print(result)
                     return result
                 else:
                     result = {"error":"unknown function"}
@@ -97,7 +98,7 @@ def food_agent(max_steps=20, *, user_input: str=""): # pass user_input as keywor
             continue
 
         # no no more tool calls invoked by thinking-step --> text-response 
-        print("🍕 Fooder:", msg.content)
+        #print("🍕 Fooder:", msg.content)
         break   # just for the RAG-loop: agent either returns RAG results and exits loop, or generates answer autonomously and then breaks
         # otherwise get another user turn
         nxt = input("YOU: ")
