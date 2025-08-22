@@ -1,0 +1,30 @@
+from rag_eval.helpers import query_gt_extractor
+from rag_eval.data_models import EvalContainer
+# force reload of agent because I update it often
+import importlib
+import agent.main as main
+importlib.reload(main)  # forces reload right now
+
+
+def rag_loop_agent() -> list[EvalContainer]:
+    eval_conts = []
+    queries, gts = query_gt_extractor(path="data/agent_eval_questions.json", tokenize=False) # get questions and ground truth
+    for idx, (q, gt) in enumerate(zip(queries, gts)): # maybe we can do without zip and do not need to iterate over gts because I only need idx to access the right gt
+        result = main.food_agent(user_input=q)
+
+        if result: 
+            # extract what is needed for EvalContainer-object
+            query = queries[idx]
+            ground_truth_answer = gts[idx]
+            retrieved_texts = result[1]
+            generated_answer = result[0]
+
+            eval_cont = EvalContainer(query=query,
+                                      ground_truth_answer=ground_truth_answer,
+                                      generated_answer=generated_answer[0], # unlist generated_answer
+                                      retrieved_texts=retrieved_texts[0] # unnest list with retrieved texts
+                                      )
+            
+            eval_conts.append(eval_cont)
+
+    return eval_conts
