@@ -20,7 +20,7 @@ class AnswerPrecisionEvaluator:
 
     def evaluate(self, ex: EvalContainer) -> Dict[str, Any]:
         # break down GT and generated answer into individual statements 
-        gt_claims = self.extractor.extract(ex.ground_truth_answer)
+        gt_claims = self.extractor.extract(ex.ground_truth_answer, ex.query)
         gen_claims = self.extractor.extract(ex.generated_answer)
 
         # Ground truth claim recall: does the generated answer entail *each* GT claim? 
@@ -71,7 +71,7 @@ class RetrievalPrecisionEvaluator:
 
     # precision of pooled context: does context "back up" GT claims?
     def evaluate(self, ex: EvalContainer, *, pooled: bool = True) -> Dict[str, Any]: 
-        gt_claims = self.extractor.extract(ex.ground_truth_answer)
+        gt_claims = self.extractor.extract(ex.ground_truth_answer, ex.query)
 
         pooled_evidence = "\n\n".join(ex.retrieved_texts)
         coverage_supported = 0
