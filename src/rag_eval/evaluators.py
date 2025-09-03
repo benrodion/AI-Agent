@@ -43,14 +43,14 @@ class AnswerPrecisionEvaluator:
             gen_verdicts.append(ClaimVerdict(claim=c, verdict=verdict, rationale=rationale))
             if verdict == "supported":
                 supported_gen += 1
-        hallucination_precision  = supported_gen / max(1,  # safeguard against zero-division
+        answer_precision  = supported_gen / max(1,  # safeguard against zero-division
                                                        len(gen_claims))
 
         return{
             "gt_claims": gt_claims,
             "gen_claims": gen_claims,
-            "gt_claim_recall": gt_claim_recall,
-            "hallucination_precision": hallucination_precision,
+            "answer_recall": gt_claim_recall,
+            "answer_precision": answer_precision,
             "gt_claim_verdicts": [cv.__dict__ for cv in gt_verdicts],
             "gen_claim_verdicts": [cv.__dict__ for cv in gen_verdicts],
         }
@@ -81,7 +81,7 @@ class RetrievalPrecisionEvaluator:
             pooled_verdicts.append(ClaimVerdict(claim=c, verdict=verdict, rationale=rationale))
             if verdict == "supported":
                 coverage_supported +=1
-        evidence_coverage = coverage_supported / max(1, # safeguard against zero-division
+        retrieval_recall = coverage_supported / max(1, # safeguard against zero-division
                                                       len(gt_claims))
 
 
@@ -102,13 +102,13 @@ class RetrievalPrecisionEvaluator:
             doc_relevant_flags.append(doc_supported_any)
 
         relevant_docs = sum(1 for f in doc_relevant_flags if f)
-        doc_precision = (relevant_docs / max(1, # safeguard against zero-division
+        retrieval_precision = (relevant_docs / max(1, # safeguard against zero-division
                                               len(ex.retrieved_texts))) if ex.retrieved_texts else 0.0
 
         return{
             "gt_claims": gt_claims,
-            "evidence_coverage": evidence_coverage,
-            "doc_precision": doc_precision,
+            "retrieval_recall": retrieval_recall,
+            "retrieval_precision": retrieval_precision,
             "relevant_docs": relevant_docs,
             "n_docs": len(ex.retrieved_texts),
             "pooled_claim_verdicts": [cv.__dict__ for cv in pooled_verdicts],
