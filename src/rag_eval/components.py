@@ -16,7 +16,9 @@ class ClaimExtractor:
 
     SYSTEM_PROMPT = """
     You receive text and split it into atomic, verifiable claims. Split conjunctions, 
-    separate quantities, dates and named entities into distinct claims when needed. 
+    separate quantities, dates and named entities into distinct claims when needed. Please make use of the question,
+    which is also passed to you, so you extract claims adequately. E.g. if a question is "When did WW2 start?" and the ground truth
+    is "1939", the claim in the ground truth is not "1939 is a year" but "WW2 started in 1939".
     Return a JSON: {\"claims\": [\"...\", \"...\"]}. """
 
     def __init__(
@@ -29,11 +31,13 @@ class ClaimExtractor:
         self.model = model
         self.temperature = temperature
 
-    def extract(self, text: str) -> List[str]:
+    def extract(self, text: str, question: str) -> List[str]:
         "Split input into atomic claims."
         messages = [
             {"role": "system", "content": self.SYSTEM_PROMPT},
-            {"role": "user", "content": text},
+            {"role": "user", "content": (text  + question
+                                         ),
+            },
         ]
         raw = self.llm.complete(messages, model=self.model, temperature=self.temperature) # where the magic happens: claims get split
         data = _safe_json(raw) or {}
