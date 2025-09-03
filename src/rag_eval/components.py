@@ -6,7 +6,7 @@
 # ClaimExtractor parses JSON to list, EntailmentJudge to dictionary 
 from rag_eval.helpers import _safe_json
 from rag_eval.protocol import LLMClient
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 class ClaimExtractor:
     """
@@ -31,11 +31,11 @@ class ClaimExtractor:
         self.model = model
         self.temperature = temperature
 
-    def extract(self, text: str, question: str) -> List[str]:
+    def extract(self, text: str, query: Optional[str] = None) -> List[str]:
         "Split input into atomic claims."
         messages = [
             {"role": "system", "content": self.SYSTEM_PROMPT},
-            {"role": "user", "content": (text  + question
+            {"role": "user", "content": (text  + query
                                          ),
             },
         ]
