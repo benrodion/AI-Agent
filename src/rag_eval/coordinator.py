@@ -22,6 +22,6 @@ class RAGEvaluator:
 
     def evaluate_all(self, ex: EvalContainer) -> Dict[str, Any]:
         return {
-            "answer": self.answer_eval.evaluate(ex),
-            "retrieval": self.retrieval_eval.evaluate(ex),
+            "answer_quality": self.answer_eval.evaluate(ex),
+            "retrieval_quality": self.retrieval_eval.evaluate(ex),
         }

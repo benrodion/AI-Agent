@@ -33,10 +33,19 @@ class ClaimExtractor:
 
     def extract(self, text: str, query: Optional[str] = None) -> List[str]:
         "Split input into atomic claims."
-        messages = [
+
+        if query: 
+            messages = [
+                {"role": "system", "content": self.SYSTEM_PROMPT},
+                {"role": "user", "content": (text  + query
+                                            ),
+                },
+            ]
+
+        else: 
+             messages = [
             {"role": "system", "content": self.SYSTEM_PROMPT},
-            {"role": "user", "content": (text  + query
-                                         ),
+            {"role": "user", "content": text
             },
         ]
         raw = self.llm.complete(messages, model=self.model, temperature=self.temperature) # where the magic happens: claims get split
