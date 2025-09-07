@@ -98,7 +98,8 @@ class RetrievalPrecisionEvaluator:
         for i, doc_text in enumerate(ex.retrieved_texts):
             doc_supported_any = False
             for idx , c in enumerate(gt_claims):
-                print(f"GT Claim: {c}, Context: {doc_text}")
+                print(f" === ITERATION: {idx} ===")
+                #print(f"GT Claim: {c}, Context: {doc_text}") # just for bugfixing
                 verdict, _ = self.judge.judge(c, doc_text)
                 if verdict == "supported":
                     doc_supported_any = True
