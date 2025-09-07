@@ -73,7 +73,10 @@ class RetrievalPrecisionEvaluator:
     def evaluate(self, ex: EvalContainer, *, pooled: bool = True) -> Dict[str, Any]: 
         gt_claims = self.extractor.extract(ex.ground_truth_answer, ex.query)
 
-        pooled_evidence = "\n\n".join(ex.retrieved_texts)
+        if isinstance(ex.retrieved_texts, (list, tuple)):
+            pooled_evidence = "\n\n".join(ex.retrieved_texts)
+        else:
+            pooled_evidence = ex.retrieved_texts
         coverage_supported = 0
         pooled_verdicts: List[ClaimVerdict] = []
         for c in gt_claims:
@@ -95,6 +98,7 @@ class RetrievalPrecisionEvaluator:
         for i, doc_text in enumerate(ex.retrieved_texts):
             doc_supported_any = False
             for idx , c in enumerate(gt_claims):
+                print(f"GT Claim: {c}, Context: {doc_text}")
                 verdict, _ = self.judge.judge(c, doc_text)
                 if verdict == "supported":
                     doc_supported_any = True
