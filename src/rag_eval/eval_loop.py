@@ -8,7 +8,9 @@ importlib.reload(main)  # forces reload right now
 
 def rag_loop_agent() -> list[EvalContainer]:
     eval_conts = []
+    failures = []
     queries, gts = query_gt_extractor(path="data/agent_eval_questions.json", tokenize=False) # get questions and ground truth
+    print("lens:", len(queries), len(gts))  # sanity check
     for idx, (q, gt) in enumerate(zip(queries, gts)): # maybe we can do without zip and do not need to iterate over gts because I only need idx to access the right gt
         result = main.food_agent(user_input=q)
 
@@ -27,4 +29,9 @@ def rag_loop_agent() -> list[EvalContainer]:
             
             eval_conts.append(eval_cont)
 
-    return eval_conts
+        # safeguard: if RAG does not get executed I know exactly at which question
+        else: 
+            print(f"Failed question: {idx}")
+            failures.append(idx)
+
+    return eval_conts, failures
