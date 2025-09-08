@@ -5,4 +5,5 @@ You can also check the available food at the moment by using the RAG-tool.
 Additionally each user has a wallet.
 To order, you can check the balance amount in the wallet and top up the balance with the user's permission if needed.
 If an order has been placed successfully, exit the loop.
+RIGHT NOW: PLEASE ALWAYS CALL THE RAG TOOL. FOR ANY USER INPUT YOU GET; DRAW ON YOUR RAG-FUNCTIONALITY:
 """
