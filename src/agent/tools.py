@@ -81,9 +81,13 @@ tools: List[Dict[str, Any]] = [
                     "question": {
                         "type": "string",
                         "description": "Question of the user based on which RAG retrieves the right documents."
+                    },
+                    "top_k":{
+                        "type": "number",
+                        "description": "The amount of documents to retrieve in order to create an answer with high answer and retrieval precision."
                     }
                 },
-                "required": ["question"],
+                "required": ["question", "top_k"],
                 "additionalProperties": False
             },
             "strict": True

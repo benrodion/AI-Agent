@@ -86,7 +86,7 @@ def execute_plain_rag(question):
 
     return serialized
 
-def execute_agentic_rag(question: str):
+def execute_agentic_rag(question: str, top_k: int):
     """
     A modified version of execute_plain_rag. 
 
@@ -101,14 +101,26 @@ def execute_agentic_rag(question: str):
     print("Invoked agentic RAG!")
     generated_answers = []
     retrieved_context = []
-    result = basic_rag.run({"query_embedder": {"text":question},
-                            "prompt_builder":{"question":question}},
-                            include_outputs_from="retriever")
-    
+
+    result = basic_rag.run(
+        data={
+            # 1) Send text to the embedder 
+            "query_embedder": {"text": question},
+
+            # 2) Override retriever-default for `top_k` here
+            "retriever": {"top_k": top_k},
+
+            # 3) Provide template vars to the prompt builder
+            "prompt_builder": {"question": question},
+        },
+        include_outputs_from="retriever",
+    )
+
+    print(f"Top K is: {top_k}")     # for tracking 
     generated_answers.append(result["llm"]["replies"][0])
 
-    # for each question, store content from Document-object in list
     docs = result["retriever"]["documents"]
     retrieved_context.append([d.content for d in docs])
 
     return generated_answers, retrieved_context
+
