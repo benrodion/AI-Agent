@@ -70,10 +70,63 @@ def food_agent(max_steps=20, *, user_input: str=""): # pass user_input as keywor
                     result = helpers.top_up_wallet(**args)
                 elif name=="order_food":
                     result = helpers.order_food(**args)
-                elif name=="execute_agentic_rag":
-                    result = helpers.execute_agentic_rag(**args)
+                elif name == "execute_agentic_rag":
+                    do_rag = True       # stopping criterion 1: LLM-assessment: is new RAG needed?
+                    rag_count = 0       # stopping criterion 2: prevents infinite RAG-loops
+
+                    while do_rag and rag_count < 5:
+                        result = helpers.execute_agentic_rag(**args)
+
+                        # Force evaluation without tool call
+                        resp = client.chat.completions.create(
+                            model=model,
+                            messages=[{
+                                "role": "user",
+                                "content": (
+                                    f"Inspiziere folgendes Ergebnis:\n\n{result}\n\n"
+                                    "Beantworte NUR mit True oder False (ohne sonstigen Text): "
+                                    "True = RAG erneut ausführen (Antwort/Context unzureichend), "
+                                    "False = zufriedenstellend."
+                                )
+                            }],
+                            tools=tools,
+                            tool_choice="none",          # no tool calls here!
+                            temperature=0
+                        )
+
+                        # parse output to bool
+                        raw = resp.choices[0].message.content.strip().lower()
+                        do_rag = (raw == "true")
+
+                        if do_rag:
+                            # force agent to define new parameters for new RAG-Call
+                            response = client.chat.completions.create(
+                                model=model,
+                                messages=[{
+                                    "role": "user",
+                                    "content": "Rufe das RAG-Tool auf und definiere geeignete Parameter."
+                                }],
+                                tools=tools,
+                                tool_choice="required",   # force tool call
+                                temperature=0
+                            )
+
+                            msg = response.choices[0].message
+
+                            # safety: check if there is a tool call 
+                            if not msg.tool_calls:
+                                raise RuntimeError("Model hat keinen Tool-Call erzeugt.")
+
+                            # take tool call
+                            call = msg.tool_calls[0]
+                            # get arguments 
+                            args = json.loads(call.function.arguments)
+
+                        rag_count += 1
+
                     print(result)
                     return result
+
                 else:
                     result = {"error":"unknown function"}
 
