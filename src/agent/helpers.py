@@ -122,5 +122,11 @@ def execute_agentic_rag(question: str, top_k: int):
     docs = result["retriever"]["documents"]
     retrieved_context.append([d.content for d in docs])
 
-    return generated_answers, retrieved_context
+    # --- NEW: try to extract token usage
+    usage = None
+    if "llm" in result and "usage" in result["llm"]:
+        usage = result["llm"]["usage"]  # often contains prompt_tokens, completion_tokens, total_tokens
 
+    result = (generated_answers, retrieved_context)
+
+    return result, usage

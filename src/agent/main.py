@@ -1,12 +1,16 @@
 from agent.tools import tools
 from agent.prompts import system_prompt
 import agent.helpers as helpers
+from importlib import reload
+helpers = reload(helpers)
 from textwrap import dedent
 from openai import AzureOpenAI
 import json
 import os
 from dotenv import load_dotenv
 from pathlib import Path
+from agent.llm import LLMWithMeter
+from agent.telemetry import TokenUsage
 
 ROOT = Path(__file__).resolve().parents[2]   # from src/agent/*.py up to project root
 env_file = ROOT / ".env"
@@ -20,11 +24,12 @@ base_url = os.getenv("OPENAI_CHATCOMPLETIONS_URL")
 
 # initiate client
 client = AzureOpenAI(
-    base_url=base_url,
-    api_key=api_key,
-    api_version=api_version
-)
+     base_url=base_url,
+     api_key=api_key,
+     api_version=api_version
+ )
 
+llm = LLMWithMeter(client=client)
 
 def food_agent(max_steps=20, *, user_input: str=""): # pass user_input as keyword arg
     messages = [
@@ -44,7 +49,7 @@ def food_agent(max_steps=20, *, user_input: str=""): # pass user_input as keywor
     # initiate reasoning loop 
     for step in range(1, max_steps+1):
         print(f"\n▶️ Step {step}: thinking…")    # for tracking 
-        response = client.chat.completions.create(
+        response = llm.chat(     # instead of the plain client, we use our special meter client
             model=model,
             messages=messages,
             tools=tools,
@@ -74,11 +79,24 @@ def food_agent(max_steps=20, *, user_input: str=""): # pass user_input as keywor
                     do_rag = True       # stopping criterion 1: LLM-assessment: is new RAG needed?
                     rag_count = 0       # stopping criterion 2: prevents infinite RAG-loops
 
+                    # IMPORTANT: capture token usage from any LLM calls the RAG helper makes
+                    # Option A: change helpers to return (result, usage_dict)
+                    # Option B (shown): pass llm to helper so it uses the same wrapper.
+                    result = None
+
                     while do_rag and rag_count < 5:
-                        result = helpers.execute_agentic_rag(**args)
+                        result, usage = helpers.execute_agentic_rag(**args)
+
+                        if usage:
+                            print("RAG token usage:", usage)
+                            # also add to your running total
+                            llm.total_usage.prompt += usage.get("prompt_tokens", 0)
+                            llm.total_usage.completion += usage.get("completion_tokens", 0)
+                            llm.total_usage.total += usage.get("total_tokens", 0)
+
 
                         # Force evaluation without tool call
-                        resp = client.chat.completions.create(
+                        resp = llm.chat(
                             model=model,
                             messages=[{
                                 "role": "user",
@@ -100,7 +118,7 @@ def food_agent(max_steps=20, *, user_input: str=""): # pass user_input as keywor
 
                         if do_rag:
                             # force agent to define new parameters for new RAG-Call
-                            response = client.chat.completions.create(
+                            response = llm.chat(
                                 model=model,
                                 messages=[{
                                     "role": "user",
@@ -124,8 +142,12 @@ def food_agent(max_steps=20, *, user_input: str=""): # pass user_input as keywor
 
                         rag_count += 1
 
-                    print(result)
-                    return result
+                    print(result, llm.total_usage.to_dict)
+                    return {
+                        "result": result,
+                        "token_usage": llm.total_usage.to_dict(),
+                        "calls": llm.calls,
+                    }
 
                 else:
                     result = {"error":"unknown function"}
