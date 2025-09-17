@@ -122,10 +122,10 @@ def food_agent(max_steps=20, *, user_input: str=""): # pass user_input as keywor
                                 model=model,
                                 messages=[{
                                     "role": "user",
-                                    "content": "Rufe das RAG-Tool auf und definiere geeignete Parameter."
+                                    "content": "Rufe das RAG-Tool auf und definiere geeignete Parameter. Nutze NICHT dasselbe top_k wie zuvor."
                                 }],
                                 tools=tools,
-                                tool_choice="required",   # force tool call
+                                tool_choice={"type": "function", "function": {"name": "execute_agentic_rag"}},   # force tool call
                                 temperature=0
                             )
 
