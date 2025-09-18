@@ -17,14 +17,15 @@ def rag_loop_agent() -> list[EvalContainer]:
 
 
         if full_result: 
-            result = full_result.get("result")
-            usage = full_result.get("token_usage")
 
             # extract what is needed for EvalContainer-object
             query = queries[idx]
             ground_truth_answer = gts[idx]
-            retrieved_texts = result[1]
-            generated_answer = result[0]
+            retrieved_texts = full_result.get("retrieved_contexts", [])
+            generated_answer = full_result.get("answer", "")
+
+            # extract usage
+            usage = full_result.get("token_usage")
 
             eval_cont = EvalContainer(query=query,
                                       ground_truth_answer=ground_truth_answer,

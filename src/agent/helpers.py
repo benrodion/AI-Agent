@@ -130,3 +130,16 @@ def execute_agentic_rag(question: str, top_k: int):
     result = (generated_answers, retrieved_context)
 
     return result, usage
+
+
+# STRICT extractor: akzeptiert NUR das von dir gezeigte Objektformat
+def extract_contexts_strict(rag_tuple) -> list[str]:
+    """
+    Expects: ( [answer_strs], [ [context_strs ... ] ] )
+    Returns: list[str]  (the contexts from the inner list)
+    """
+    # Unpack the exact structure
+    answer_list, contexts_outer = rag_tuple          # contexts_outer == [ list[str] ]
+    ctx_list = contexts_outer[0]                     # list[str]
+    # Keep only strings (defensive but still strict)
+    return [c for c in ctx_list if isinstance(c, str)]
