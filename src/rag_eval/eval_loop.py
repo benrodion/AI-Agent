@@ -29,8 +29,8 @@ def rag_loop_agent() -> list[EvalContainer]:
 
             eval_cont = EvalContainer(query=query,
                                       ground_truth_answer=ground_truth_answer,
-                                      generated_answer=generated_answer[0], # unlist generated_answer
-                                      retrieved_texts=retrieved_texts[0] # unnest list with retrieved texts
+                                      generated_answer=generated_answer,
+                                      retrieved_texts=retrieved_texts 
                                       )
             
             eval_conts.append(eval_cont)
