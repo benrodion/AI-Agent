@@ -18,8 +18,8 @@ You must run the following cycle autonomously without asking the user, until you
 2) RETRIEVE (if needed)
    - Call the tool `execute_agentic_rag` with:
        { "question": "<short, precise semantic search query>", "top_k": <integer> }
-   - Choose `top_k` adaptively (typical 3–10). If you retry retrieval, you MUST change at least one of:
-     (a) the semantic search query phrasing (use synonyms, narrower/wider scope), or
+   - Choose `top_k` adaptively (typical 3–10). If you retry retrieval, you MUST change at least the semantic search query:
+     (a) the semantic search query phrasing (use synonyms, narrower/wider scope), and if required
      (b) `top_k` (increase or decrease).
    - Avoid repeating the identical parameters across retries.
 
@@ -33,7 +33,7 @@ You must run the following cycle autonomously without asking the user, until you
 
 5) DECIDE
    - If the draft is insufficient or evidence is thin, IMMEDIATELY call `execute_agentic_rag` again
-     with a refined `question` and changed `top_k` (as per 2), then go back to step 3.
+     with a refined `question` and, if needed, changed `top_k` (as per 2), then go back to step 3.
    - If the draft is sufficient, output exactly one line:
        FINAL_ANSWER: <your concise final answer to the user>
      Do not include the words PLAN, DRAFT_ANSWER, or CRITIQUE in the final output.
@@ -42,4 +42,6 @@ Additional rules:
 - Do not ask the user for clarification inside the loop; rely on retrieval and your own refinement.
 - Be precise with currency and item names when present in the sources.
 - Keep answers short and helpful.
+- If you are about to reach the allowed limit of RAG-iterations, finalize the answer. ALWAYS finish the cycle with 
+   FINAL ANSWER: <your concise final answer to the user>
 """
