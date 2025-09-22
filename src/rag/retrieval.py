@@ -51,7 +51,7 @@ basic_rag = Pipeline()
 basic_rag.add_component("query_embedder",
                         SentenceTransformersTextEmbedder(model=embedding_model, progress_bar=True))
 basic_rag.add_component("retriever", InMemoryEmbeddingRetriever(document_store,
-                                                                top_k=10)) # TODO: make top-k flexible 
+                                                                top_k=10)) 
 basic_rag.add_component("prompt_builder", PromptBuilder(template=template))
 basic_rag.add_component("llm", AzureOpenAIGenerator(
     azure_endpoint=base_endpoint,

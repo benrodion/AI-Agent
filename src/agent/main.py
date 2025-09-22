@@ -1,5 +1,5 @@
 from agent.tools import tools
-from agent.prompts import system_prompt
+from agent.prompts import system_prompt_extended  
 import agent.helpers as helpers
 from importlib import reload
 helpers = reload(helpers)
@@ -27,132 +27,112 @@ client = AzureOpenAI(
      base_url=base_url,
      api_key=api_key,
      api_version=api_version
- )
+)
 
 llm = LLMWithMeter(client=client)
 
-def food_agent(max_steps=20, *, user_input: str=""): # pass user_input as keyword arg
+def food_agent(
+    max_steps: int = 6,
+    max_rag_loops: int = 5,
+    *,
+    user_input: str = ""
+):
+    """
+    Agenten-Loop:
+    - LLM steuert eigenständig Retrieval → Draft → Selbstreflexion → ggf. Retry (neue Query / neues top_k) → Final.
+    - Final wird durch 'FINAL_ANSWER:' signalisiert.
+    """
+
     messages = [
-      {"role":"system","content":dedent(system_prompt)}
+        {"role": "system", "content": dedent(system_prompt_extended)}
     ]
 
-    # first user turn
-    #user_input = user_input
-
     # base case: user quits
-    if not user_input or user_input.lower().strip() in ("quit","exit", "bye"):
+    if not user_input or user_input.lower().strip() in ("quit","exit","bye"):
         print("Goodbye 🍕")
         return
-    # safe user_input to messages
-    messages.append({"role":"user","content":user_input})
 
-    # initiate reasoning loop 
-    for step in range(1, max_steps+1):
-        print(f"\n▶️ Step {step}: thinking…")    # for tracking 
-        response = llm.chat(     # instead of the plain client, we use our special meter client
+    # first user turn
+    messages.append({"role":"user","content": user_input})
+
+    rag_calls = 0
+    final_answer = None
+    combined_contexts: list[str] = []   # collect context over all RAG-calls
+
+    for step in range(1, max_steps + 1):
+        print(f"\n▶️ Step {step}: thinking…")
+
+        response = llm.chat(
             model=model,
             messages=messages,
             tools=tools,
-            tool_choice="auto"
+            tool_choice="auto"  # agent decides which tool to use 
         )
 
-        # save Agent's message to messages
+        # Save assistant message
         msg = response.choices[0].message
         messages.append(msg)
 
         # Tool-calling case
         if msg.tool_calls:
-            # handle each call in order
             for call in msg.tool_calls:
                 print("TOOL CALL ▶", call.function.name, call.function.arguments)
-                name = call.function.name   # get function name
-                args = json.loads(call.function.arguments or "{}")  # get function args
 
-                # 2) we have all args -->  actually run the function
-                if name=="get_wallet_balance":
+                name = call.function.name
+                args = json.loads(call.function.arguments or "{}")
+
+                # ---- RAG tool ---------------------------------------------------
+                if name == "execute_agentic_rag":
+                    # Fallback: if model omits top-k or tries to set a non-accepted value
+                    if "top_k" not in args or not isinstance(args["top_k"], (int, float)) or args["top_k"] <= 0:
+                        args["top_k"] = 5
+
+                    # robust unpacking of result: either result + usage, or just result
+                    _ret = helpers.execute_agentic_rag(**args)
+                    if isinstance(_ret, tuple) and len(_ret) == 2:
+                        result, usage = _ret
+                    else:
+                        result, usage = _ret, None
+
+                    rag_calls += 1
+
+                    combined_contexts.extend(helpers.extract_contexts_strict(result))
+
+                    # Token-Metering of Helper-Calls
+                    if usage:
+                        print("RAG token usage:", usage)
+                        llm.total_usage.prompt += usage.get("prompt_tokens", 0)
+                        llm.total_usage.completion += usage.get("completion_tokens", 0)
+                        llm.total_usage.total += usage.get("total_tokens", 0)
+
+                    # Tool-Result fed back into message-context
+                    messages.append({
+                        "role": "tool",
+                        "name": name,
+                        "tool_call_id": call.id,
+                        "content": json.dumps(result)
+                    })
+
+                    # safety net against endless RAG-loops from tool calling
+                    if rag_calls >= max_rag_loops:
+                        print("ℹ️  max_rag_loops erreicht – Agent muss jetzt finalisieren.")
+                    # move on to next thinking step 
+                    continue
+
+                # ---- other tools - irrelevant right now  ----
+                elif name == "get_wallet_balance":
                     result = helpers.get_wallet_balance(**args)
-                elif name=="top_up_wallet":
+
+                elif name == "top_up_wallet":
                     result = helpers.top_up_wallet(**args)
-                elif name=="order_food":
+
+                elif name == "order_food":
                     result = helpers.order_food(**args)
-                elif name == "execute_agentic_rag":
-                    do_rag = True       # stopping criterion 1: LLM-assessment: is new RAG needed?
-                    rag_count = 0       # stopping criterion 2: prevents infinite RAG-loops
-
-                    # IMPORTANT: capture token usage from any LLM calls the RAG helper makes
-                    # Option A: change helpers to return (result, usage_dict)
-                    # Option B (shown): pass llm to helper so it uses the same wrapper.
-                    result = None
-
-                    while do_rag and rag_count < 5:
-                        result, usage = helpers.execute_agentic_rag(**args)
-
-                        if usage:
-                            print("RAG token usage:", usage)
-                            # also add to your running total
-                            llm.total_usage.prompt += usage.get("prompt_tokens", 0)
-                            llm.total_usage.completion += usage.get("completion_tokens", 0)
-                            llm.total_usage.total += usage.get("total_tokens", 0)
-
-
-                        # Force evaluation without tool call
-                        resp = llm.chat(
-                            model=model,
-                            messages=[{
-                                "role": "user",
-                                "content": (
-                                    f"Inspiziere folgendes Ergebnis:\n\n{result}\n\n"
-                                    "Beantworte NUR mit True oder False (ohne sonstigen Text): "
-                                    "True = RAG erneut ausführen (Antwort/Context unzureichend), "
-                                    "False = zufriedenstellend."
-                                )
-                            }],
-                            tools=tools,
-                            tool_choice="none",          # no tool calls here!
-                            temperature=0
-                        )
-
-                        # parse output to bool
-                        raw = resp.choices[0].message.content.strip().lower()
-                        do_rag = (raw == "true")
-
-                        if do_rag:
-                            # force agent to define new parameters for new RAG-Call
-                            response = llm.chat(
-                                model=model,
-                                messages=[{
-                                    "role": "user",
-                                    "content": "Rufe das RAG-Tool auf und definiere geeignete Parameter. Nutze NICHT dasselbe top_k wie zuvor."
-                                }],
-                                tools=tools,
-                                tool_choice={"type": "function", "function": {"name": "execute_agentic_rag"}},   # force tool call
-                                temperature=0
-                            )
-
-                            msg = response.choices[0].message
-
-                            # safety: check if there is a tool call 
-                            if not msg.tool_calls:
-                                raise RuntimeError("Model hat keinen Tool-Call erzeugt.")
-
-                            # take tool call
-                            call = msg.tool_calls[0]
-                            # get arguments 
-                            args = json.loads(call.function.arguments)
-
-                        rag_count += 1
-
-                    print(result, llm.total_usage.to_dict)
-                    return {
-                        "result": result,
-                        "token_usage": llm.total_usage.to_dict(),
-                        "calls": llm.calls,
-                    }
 
                 else:
-                    result = {"error":"unknown function"}
+                    result = {"error": f"unknown function: {name}"}
 
-                # 3) append tool response 
+                # Append tool output to messages
                 messages.append({
                     "role": "tool",
                     "name": name,
@@ -160,25 +140,49 @@ def food_agent(max_steps=20, *, user_input: str=""): # pass user_input as keywor
                     "content": json.dumps(result)
                 })
 
-                # If order_pizza succeeded, print summary and exit
-                if name == "order_food": 
-                    #print(result)  # just to check 
+                # food ordering case
+                if name == "order_food":
                     meals = result.get("food_name")
                     price = result.get("food_price")
                     balance = result.get("balance")
                     print(f"🍕 Fooder: The meal(s) {meals} have been ordered for {price} €. The remaining balance on your pizza wallet is {balance} €. Goodbye!")
-                    return  # exit entire pizza_agent function 
+                    return
 
-            # after handling call, move on to next thinking-step until finished
+            # keep iterating after tool use - agent might reflect again
             continue
 
-        # no no more tool calls invoked by thinking-step --> text-response 
-        #print("🍕 Fooder:", msg.content)
-        break   # just for the RAG-loop: agent either returns RAG results and exits loop, or generates answer autonomously and then breaks
-        # otherwise get another user turn
-        nxt = input("YOU: ")
-        if nxt.lower() in ("quit","exit"):
-            print("🍕 Fooder: Goodbye 🍕"); return
-        messages.append({"role":"user","content":nxt})
-    
-    #print("⚠️  Reached max steps without a final answer.")
+        # no tool call this round --> check if finalisation has taken place
+        content = msg.content or ""
+
+        # convention from system_prompt: FINAL_ANSWER: <Text>
+        if "FINAL_ANSWER:" in content:
+            final_answer = content.split("FINAL_ANSWER:", 1)[1].strip()
+            break
+
+        # safety net
+        if rag_calls >= max_rag_loops:
+            # force final answer with last assistant message
+            final_answer = content.strip()
+            print("ℹ️  Abschluss mit letzter Nachricht, da max_rag_loops erreicht.")
+            break
+
+    # Print and return final response
+    print("\n✅ Fertig.")
+    if final_answer:
+        print("\n🧾 FINAL_ANSWER:\n", final_answer)
+    else:
+        print("\n(Kein expliziter FINAL_ANSWER ermittelt – gebe letzte Assistant-Nachricht zurück.)")
+        last = messages[-1]
+        final_answer = ((last["content"] if isinstance(last, dict) else last.content) or "").strip()
+        
+    #print(combined_contexts)
+
+
+    return {
+        "answer": final_answer,
+        "token_usage": llm.total_usage.to_dict(),
+        "calls": llm.calls, # num of llm-calls (int)
+        "rag_calls": rag_calls, # num of RAG-calls (int)
+        "retrieved_contexts": combined_contexts
+    }
+
