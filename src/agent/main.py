@@ -57,8 +57,7 @@ def food_agent(
 
     rag_calls = 0
     final_answer = None
-    final_contexts: list[str] = []
-    #combined_contexts: list[str] = []   # collect context over all RAG-calls
+    combined_contexts: list[str] = []   # collect context over all RAG-calls
 
     for step in range(1, max_steps + 1):
         print(f"\n▶️ Step {step}: thinking…")
@@ -97,10 +96,7 @@ def food_agent(
 
                     rag_calls += 1
 
-                    # save contexts from all RAG calls in list
-                    #combined_contexts.extend(helpers.extract_contexts_strict(result))
-                    # only save context from most recent RAG-call
-                    final_contexts = helpers.extract_contexts_strict(result)
+                    combined_contexts.extend(helpers.extract_contexts_strict(result))
 
                     # Token-Metering of Helper-Calls
                     if usage:
@@ -187,7 +183,6 @@ def food_agent(
         "token_usage": llm.total_usage.to_dict(),
         "calls": llm.calls, # num of llm-calls (int)
         "rag_calls": rag_calls, # num of RAG-calls (int)
-        "retrieved_contexts": final_contexts
+        "retrieved_contexts": combined_contexts
     }
-
 
