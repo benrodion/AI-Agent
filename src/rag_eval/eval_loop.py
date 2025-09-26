@@ -10,6 +10,8 @@ def rag_loop_agent() -> list[EvalContainer]:
     eval_conts = []
     token_usage = []
     failures = []
+    tool_calls = []
+    tool_args = []
     queries, gts = query_gt_extractor(path="data/agent_eval_questions.json", tokenize=False) # get questions and ground truth
     # print("lens:", len(queries), len(gts))  # sanity check
     for idx, (q, gt) in enumerate(zip(queries, gts)): # maybe we can do without zip and do not need to iterate over gts because I only need idx to access the right gt
@@ -24,8 +26,12 @@ def rag_loop_agent() -> list[EvalContainer]:
             retrieved_texts = full_result.get("retrieved_contexts", [])
             generated_answer = full_result.get("answer", "")
 
+
+
             # extract usage
-            usage = full_result.get("token_usage")
+            token_usage.append(full_result.get("token_usage"))
+            tool_calls.append(full_result.get("tool_calls"))
+            tool_args.append(full_result.get("tool_args"))
 
             eval_cont = EvalContainer(query=query,
                                       ground_truth_answer=ground_truth_answer,
@@ -34,11 +40,10 @@ def rag_loop_agent() -> list[EvalContainer]:
                                       )
             
             eval_conts.append(eval_cont)
-            token_usage.append(usage)
 
         # safeguard: if RAG does not get executed I know exactly at which question
         else: 
             print(f"Failed question: {idx}")
             failures.append(idx)
 
-    return eval_conts, token_usage, failures
+    return eval_conts, token_usage, failures, tool_calls, tool_args
