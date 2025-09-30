@@ -43,6 +43,7 @@ def food_agent(
     - Final wird durch 'FINAL_ANSWER:' signalisiert.
     """
 
+    llm.start_run()
     messages = [
         {"role": "system", "content": dedent(system_prompt_extended)}
     ]
@@ -81,6 +82,15 @@ def food_agent(
                 name = call.function.name
                 args = json.loads(call.function.arguments or "{}")
 
+                # ---- record tool call ----
+                llm.record_tool_call(
+                    call_id = call.id,
+                    name=name,
+                    args=args,
+                    status="requested"
+                )
+
+
                 # ---- RAG tool ---------------------------------------------------
                 if name == "execute_agentic_rag":
                     # Fallback: if model omits top-k or tries to set a non-accepted value
@@ -98,12 +108,23 @@ def food_agent(
 
                     combined_contexts.extend(helpers.extract_contexts_strict(result))
 
-                    # Token-Metering of Helper-Calls
+                    # --- record RAG-tokens per call ---
                     if usage:
                         print("RAG token usage:", usage)
-                        llm.total_usage.prompt += usage.get("prompt_tokens", 0)
-                        llm.total_usage.completion += usage.get("completion_tokens", 0)
-                        llm.total_usage.total += usage.get("total_tokens", 0)
+                        llm.record_external_usage(
+                            usage,
+                            source="rag_helper",
+                            meta={"top_k": args["top_k"]}
+                        )
+
+                    # update tool call status & meta
+                    llm.update_tool_call(
+                        call_id=call.id,
+                        status="succeeded",
+                        meta={"top_k": args.get("top_k"), "retrieved_docs": len(result.get("documents", [])) if isinstance(result, dict) else None},
+                        result_summary=("ok" if not isinstance (result, dict) else result.get("status") or "ok")
+                    )
+
 
                     # Tool-Result fed back into message-context
                     messages.append({
@@ -177,12 +198,21 @@ def food_agent(
         
     #print(combined_contexts)
 
+    # --- sum up tota tokens for THIS run ---
+    run_totals = llm.current_run_totals()
+    run_calls =[c for c in llm.calls if c["run_id"] == llm.current_run_id]
+
+    # --- NEW: per-run tool-call audit ---
+    tool_calls_this_run = llm.current_run_tool_calls()
+    tools_args_list = [tc["args"] for tc in tool_calls_this_run]
 
     return {
         "answer": final_answer,
-        "token_usage": llm.total_usage.to_dict(),
-        "calls": llm.calls, # num of llm-calls (int)
+        "token_usage": run_totals.to_dict(),
+        "calls": run_calls, # num of llm-calls (int)
         "rag_calls": rag_calls, # num of RAG-calls (int)
-        "retrieved_contexts": combined_contexts
+        "retrieved_contexts": combined_contexts,
+        "tool_calls": tool_calls_this_run,  # fully structured audit
+        "tool_args": tools_args_list # just tool call args
     }
 
