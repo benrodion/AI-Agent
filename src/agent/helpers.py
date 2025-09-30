@@ -143,3 +143,84 @@ def extract_contexts_strict(rag_tuple) -> list[str]:
     ctx_list = contexts_outer[0]                     # list[str]
     # Keep only strings (defensive but still strict)
     return [c for c in ctx_list if isinstance(c, str)]
+
+
+import pandas as pd
+import re
+
+
+def tool_call_parser(tool_calls: list[list[dict]]) -> list:
+    """
+    Input: List of lists containing the tool-call dictionaries
+    Output: [{"name_0": , "name_1":...}, {"query_0":..., "query_1":...}, {"top_k_0":.., "top_k_1":...}]
+            --> standardized length. Each dictionary has five items. 
+    """
+    # stores our dictionaries 
+    all_tools = []
+
+    for tool_call in tool_calls: 
+        # at each new tool call, these are reset 
+        tool_name = {}
+        query = {}
+        top_k = {}
+        counter = 0
+
+        # logic: count up until number of cols we must have per metric is filled
+        while counter < 5:  
+            # if tool_call has an item at tool_call[counter] --> extract info and store in dict
+            if counter < len(tool_call):
+                tool_name[f"name_{counter}"] = tool_call[counter]["name"]
+                query[f"query_{counter}"] = tool_call[counter]["args"]["question"]
+                top_k[f"top_k_{counter}"] = tool_call[counter]["args"]["top_k"]
+
+            # if no such item tool_call[counter] exists --> assign value "None"
+            else: 
+                tool_name[f"name_{counter}"] = None
+                query[f"query_{counter}"] = None
+                top_k[f"top_k_{counter}"] = None
+
+            all_tools.extend([tool_name, query, top_k])
+            counter +=1
+
+
+    return all_tools
+
+
+def triplets_to_df(obj):
+    """
+    Function for parsing the list of dictionaries with information on 
+    tool-calls to a df.
+    
+    Input: [{"name_0": , "name_1":...}, {"query_0":..., "query_1":...}, {"top_k_0":.., "top_k_1":...}]
+
+    Out: row = one triplet containting (name_*, query_*, top_k_*) * 5
+    """
+
+    if len(obj) % 3 != 0:
+        raise ValueError(f"Länge {len(obj)} ist nicht durch 3 teilbar.")
+
+    rows = []
+    for i in range(0, len(obj), 3):
+        name_d, query_d, topk_d = obj[i], obj[i+1], obj[i+2]
+        row = {}
+        # nur die gewünschten Keys übernehmen
+        for d in (name_d, query_d, topk_d):
+            row.update({k: v for k, v in d.items()
+                        if k.startswith(("name_", "query_", "top_k_"))})
+        rows.append(row)
+
+    df = pd.DataFrame(rows)
+
+    # Spalten zuverlässig sortieren (Zahl am Ende)
+    def order(prefix):
+        cols = [c for c in df.columns if re.match(rf"^{re.escape(prefix)}_\d+$", c)]
+        return sorted(cols, key=lambda c: int(re.search(r'(\d+)$', c).group(1)))
+
+    expected = order("name") + order("query") + order("top_k")
+    # fehlende (falls es welche gäbe) auffüllen, dann in Zielreihenfolge
+    for col in expected:
+        if col not in df:
+            df[col] = None
+    df = df.reindex(columns=expected)
+
+    return df
