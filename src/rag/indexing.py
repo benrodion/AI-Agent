@@ -38,3 +38,31 @@ index_pipeline.connect("embedder", "writer")
 
 # file names
 pdf_files = [files_path / f_name for f_name in os.listdir(files_path)]
+
+
+def precompute_and_store_neighbors(m: int = 2):
+    """
+    Calculates the m-neighbours of a chunk as meta-data via cosine-similarity.
+    """
+    import numpy as np
+    from sklearn.metrics.pairwise import cosine_similarity
+
+    docs = document_store.filter_documents()    # takes all docs
+    if not docs:
+        print("No documents in store; did you run index_pipeline first?")
+        return
+
+    M = np.vstack([d.embedding for d in docs]) # M = 2D-matrix with dims (N,D), N = num. chunks, D = embedding dim
+    S = cosine_similarity(M, M)     # S = similarity matrix 
+    np.fill_diagonal(S, -1.0)       # set self-similarity to -1 --> don't want a document to be picked as its own neighbour 
+
+    topm = np.argpartition(-S, m, axis=1)[:, :m]    # find indexes of top-m similar docs
+    
+    # for each chunk, map neighour indices to doc-IDs
+    for i, d in enumerate(docs):
+        nn_ids = [docs[j].id for j in topm[i].tolist()]
+        d.meta = dict(d.meta or {})
+        d.meta["nn_ids"] = nn_ids
+
+    document_store.write_documents(docs, policy=DuplicatePolicy.OVERWRITE)
+    print(f"Stored nn_ids for {len(docs)} chunks.")
