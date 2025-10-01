@@ -86,6 +86,8 @@ def execute_plain_rag(question):
 
     return serialized
 
+from rag.helpers import expand_with_precomputed_neighbors
+from rag.indexing import document_store
 def execute_agentic_rag(question: str, top_k: int):
     """
     A modified version of execute_plain_rag. 
@@ -95,7 +97,7 @@ def execute_agentic_rag(question: str, top_k: int):
 
         Returns:
             generated_answer: a string 
-            context: a list of strings with the retrieved context for eqch question.
+            context: a list of strings with the retrieved context  + top-m neighbours for eqch question.
 
     """
     print("Invoked agentic RAG!")
@@ -119,7 +121,17 @@ def execute_agentic_rag(question: str, top_k: int):
     print(f"Top K is: {top_k}")     # for tracking 
     generated_answers.append(result["llm"]["replies"][0])
 
+     # --- NEW: expand with neighbors
+
     docs = result["retriever"]["documents"]
+
+    expanded_docs = expand_with_precomputed_neighbors(
+        anchors=docs,
+        document_store=document_store,
+        m=2,
+        same_parent_only=True
+    )
+
     retrieved_context.append([d.content for d in docs])
 
     # --- NEW: try to extract token usage
@@ -151,59 +163,42 @@ import re
 
 def tool_call_parser(tool_calls: list[list[dict]]) -> list:
     """
-    Input: List of lists containing the tool-call dictionaries
-    Output: [{"name_0": , "name_1":...}, {"query_0":..., "query_1":...}, {"top_k_0":.., "top_k_1":...}]
-            --> standardized length. Each dictionary has five items. 
+    Input per question: a list of tool-call dicts (0..n).
+    Output per question: THREE dicts (name_*, query_*, top_k_*) with 5 slots each.
+    Final output: flat list like [name_dict, query_dict, topk_dict,  name_dict, query_dict, topk_dict, ...]
     """
-    # stores our dictionaries 
     all_tools = []
 
-    for tool_call in tool_calls: 
-        # at each new tool call, these are reset 
-        tool_name = {}
-        query = {}
-        top_k = {}
-        counter = 0
+    for tool_call in tool_calls:
+        tool_name, query, top_k = {}, {}, {}
 
-        # logic: count up until number of cols we must have per metric is filled
-        while counter < 5:  
-            # if tool_call has an item at tool_call[counter] --> extract info and store in dict
+        for counter in range(5):
             if counter < len(tool_call):
-                tool_name[f"name_{counter}"] = tool_call[counter]["name"]
-                query[f"query_{counter}"] = tool_call[counter]["args"]["question"]
-                top_k[f"top_k_{counter}"] = tool_call[counter]["args"]["top_k"]
+                item = tool_call[counter]
+                args = item.get("args", {}) or {}
+                tool_name[f"name_{counter}"]  = item.get("name")
+                query[f"query_{counter}"]     = args.get("question")
+                top_k[f"top_k_{counter}"]     = args.get("top_k")
+            else:
+                tool_name[f"name_{counter}"]  = None
+                query[f"query_{counter}"]     = None
+                top_k[f"top_k_{counter}"]     = None
 
-            # if no such item tool_call[counter] exists --> assign value "None"
-            else: 
-                tool_name[f"name_{counter}"] = None
-                query[f"query_{counter}"] = None
-                top_k[f"top_k_{counter}"] = None
-
-            all_tools.extend([tool_name, query, top_k])
-            counter +=1
-
+        # IMPORTANT: extend ONCE per question (not inside the loop!)
+        all_tools.extend([tool_name, query, top_k])
 
     return all_tools
 
 
 def triplets_to_df(obj):
-    """
-    Function for parsing the list of dictionaries with information on 
-    tool-calls to a df.
-    
-    Input: [{"name_0": , "name_1":...}, {"query_0":..., "query_1":...}, {"top_k_0":.., "top_k_1":...}]
-
-    Out: row = one triplet containting (name_*, query_*, top_k_*) * 5
-    """
-
+    """obj is the flat [name, query, topk, name, query, topk, ...] list."""
     if len(obj) % 3 != 0:
-        raise ValueError(f"Länge {len(obj)} ist nicht durch 3 teilbar.")
+        raise ValueError(f"Length {len(obj)} not divisible by 3.")
 
     rows = []
     for i in range(0, len(obj), 3):
         name_d, query_d, topk_d = obj[i], obj[i+1], obj[i+2]
         row = {}
-        # nur die gewünschten Keys übernehmen
         for d in (name_d, query_d, topk_d):
             row.update({k: v for k, v in d.items()
                         if k.startswith(("name_", "query_", "top_k_"))})
@@ -211,16 +206,15 @@ def triplets_to_df(obj):
 
     df = pd.DataFrame(rows)
 
-    # Spalten zuverlässig sortieren (Zahl am Ende)
+      # order columns by trailing index
     def order(prefix):
         cols = [c for c in df.columns if re.match(rf"^{re.escape(prefix)}_\d+$", c)]
         return sorted(cols, key=lambda c: int(re.search(r'(\d+)$', c).group(1)))
 
     expected = order("name") + order("query") + order("top_k")
-    # fehlende (falls es welche gäbe) auffüllen, dann in Zielreihenfolge
     for col in expected:
         if col not in df:
             df[col] = None
-    df = df.reindex(columns=expected)
+    return df.reindex(columns=expected)
 
-    return df
+
