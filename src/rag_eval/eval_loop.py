@@ -25,6 +25,7 @@ def rag_loop_agent() -> list[EvalContainer]:
             ground_truth_answer = gts[idx]
             retrieved_texts = full_result.get("retrieved_contexts", [])
             generated_answer = full_result.get("answer", "")
+            question_id = full_result.get("question_id")
 
 
 
@@ -46,4 +47,4 @@ def rag_loop_agent() -> list[EvalContainer]:
             print(f"Failed question: {idx}")
             failures.append(idx)
 
-    return eval_conts, token_usage, failures, tool_calls, tool_args
+    return eval_conts, token_usage, failures, tool_calls, tool_args, question_id

@@ -59,6 +59,7 @@ def food_agent(
     rag_calls = 0
     final_answer = None
     combined_contexts: list[str] = []   # collect context over all RAG-calls
+    q_ids = [i for i in range(1, 41)]
 
     for step in range(1, max_steps + 1):
         print(f"\n▶️ Step {step}: thinking…")
@@ -196,7 +197,7 @@ def food_agent(
         last = messages[-1]
         final_answer = ((last["content"] if isinstance(last, dict) else last.content) or "").strip()
         
-    #print(combined_contexts)
+
 
     # --- sum up tota tokens for THIS run ---
     run_totals = llm.current_run_totals()
@@ -213,6 +214,7 @@ def food_agent(
         "rag_calls": rag_calls, # num of RAG-calls (int)
         "retrieved_contexts": combined_contexts,
         "tool_calls": tool_calls_this_run,  # fully structured audit
-        "tool_args": tools_args_list # just tool call args
+        "tool_args": tools_args_list, # just tool call args
+        "question_id": q_ids
     }
 
