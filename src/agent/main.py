@@ -59,7 +59,7 @@ def food_agent(
     rag_calls = 0
     final_answer = None
     combined_contexts: list[str] = []   # collect context over all RAG-calls
-    q_ids = [i for i in range(1, 41)]
+    q_ids = [int(i) for i in range(1, 41)]
 
     for step in range(1, max_steps + 1):
         print(f"\n▶️ Step {step}: thinking…")
