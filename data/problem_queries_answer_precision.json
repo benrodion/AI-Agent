@@ -1,0 +1,49 @@
+{
+    "questions": 
+    [
+        "Welche Restaurants führen Risotto auf der Karte und wie unterscheiden sich die günstigsten und teuersten Risotto-Preise dort?",
+        "Welche UNESCO-Auszeichnungen werden in den Dokumenten für die französische Esskultur und die mexikanische Küche genannt und aus welchem Jahr stammen sie?",
+        "Welche Taco-Varianten bietet Tönis Tacos an, und welches Grundelement laut Beschreibung der mexikanischen Küche steckt in allen?",
+        "Welche zwei italienischen Desserts gelten als typisch laut Küchenbeschreibung und findest du beide auf der Karte von Il sogno de Anton?",
+        "Vergleiche die Mineralwasser-Preise und -Gebinde bei Anton's Pizza, Chez Anton und Il sogno de Anton.",
+        "Nenne je ein Rindfleisch-Hauptgericht bei Chez Anton und Il sogno de Anton und vergleiche die Preise.",
+        "Welche regionalen Schwerpunkte werden für die Provence (Frankreich) und Norditalien genannt?",
+        "Welche der beiden Küchen (französisch/mexikanisch) wurde als erste bzw. in welcher Form 2010 von der UNESCO gewürdigt, und worin liegt der Unterschied der Auszeichnung?",
+        "Welcher Wein wird explizit in einem italienischen Gericht genannt und wie passt das zu den französischen Weinregionen, die als Referenz aufgeführt werden?",
+        "Welche Pizza-Variante bei Anton's Pizza illustriert die im Küchenporträt beschriebene Einfachheit und Herkunft der Pizza?",
+        "Nenne zwei Taco-Sorten von der Karte und erkläre, welches Grundelement beide laut Küchenbeschreibung teilen.",
+        "Welche Suppe bei Chez Anton lässt sich mit einem im italienischen Küchenkapitel genannten Arme-Leute-Suppenprinzip in Beziehung setzen?",
+        "Welche Klassikerliste der Cocktailkultur korrespondiert mit einem alkoholischen Angebot bei Tönis Tacos (Preis nennen)?",
+        "Welches Käseprodukt ist zentral für eine italienische Vorspeise auf der Karte und wird auch im italienischen Küchenporträt als wichtiger Käse genannt?",
+        "Wie viel kostet die Pizza 'Doggish Special' bei Anton's Pizza?",
+        "Nenne drei wichtige französische Weinregionen.",
+        "In welchem Zeitraum fand die Prohibition in den USA statt?",
+        "Wie ist die typische italienische Menüfolge aufgebaut?",
+        "Seit wann ist das 'Gastronomische Mahl der Franzosen' UNESCO-Weltkulturerbe?",
+        "Nenne zwei Gerichte von der Karte von Tönis Tacos und ihre Preise."
+    ],
+
+    "ground_truths": 
+    [
+    "Risotto gibt es bei Anton's Pizza (z. B. ai Funghi 11,50 €, Meeresfrüchte 14,00 €) und bei Il sogno de Anton (al Tartufo Nero 28,00 €). Damit ist das günstigste Risotto 11,50 € (Anton’s), das teuerste 28,00 € (Il sogno). ",
+    "UNESCO 2010: das 'Gastronomische Mahl der Franzosen' (immaterielles Kulturerbe) und die mexikanische Küche (als erste Küche überhaupt immaterielles Kulturerbe). Beide 2010, aber unterschiedliche Gegenstände der Würdigung. ",
+    "Tönis Tacos bietet u. a. Carne Asada, Pollo, Veggie, Fish Tacos; allen gemeinsam ist das Grundelement Tortilla/Mais aus der mexikanischen Küchenbeschreibung. ",
+    "Typische italienische Desserts: Tiramisù und Panna Cotta; beide stehen bei Il sogno de Anton (Tiramisù 12,00 €, Panna Cotta 11,00 €). ",
+    "Anton’s: Mineralwasser 0,5 l für 2,50 €; Chez Anton: Eau minérale 0,5 l für 2,50 €; Il sogno de Anton: Acqua Minerale 0,75 l für 5,00 €. ",
+    "Chez Anton: Boeuf Bourguignon 14,50 €; Il sogno de Anton: Filetto di Manzo al Barolo 38,00 € — das italienische Rinderfilet ist deutlich teurer. ",
+    "Provence: Olivenöl, Kräuter, mediterranes Gemüse; Norditalien: Butter, Sahne und Reis (Risotto) dominieren. ",
+    "2010 wurde die mexikanische Küche als erste Küche überhaupt immaterielles UNESCO-Kulturerbe; im selben Jahr wurde das 'Gastronomische Mahl der Franzosen' ausgezeichnet — inhaltlich unterschiedliche Objekte. ",
+    "Il sogno de Anton nennt Barolo in 'Filetto di Manzo al Barolo'; französische Referenzregionen: Bordeaux, Burgund, Champagne (Vergleich der Weinlandschaften). ",
+    "Die Pizza Margherita bei Anton’s (Tomate, Mozzarella, Basilikum) illustriert die Einfachheit/Tradition der italienischen Küche und die Pizza-Herkunft aus Neapel. ",
+    "Beispiel: Carne Asada und Pollo Tacos — beide basieren auf Tortillas aus Mais, dem Grundelement der mexikanischen Küche. ",
+    "Chez Anton listet 'Soupe du Terrier' (hausgemachte Suppe); im italienischen Porträt wird 'Ribollita' (Brotsuppe) als Beispiel der 'cucina povera' genannt — beide verweisen auf einfache, traditionelle Suppenküche. ",
+    "Klassikerliste enthält u. a. Margarita/ Martini; Tönis Tacos verkauft Margarita für 7,00 € (Korrelation Klassiker ↔ Angebotskarte). ",
+    "Mozzarella di Bufala ist zentral für 'Insalata Caprese Bufalo & Bau' bei Il sogno; im italienischen Porträt wird Mozzarella di Bufala als wichtiger Käse erwähnt. ",
+    "Die 'Doggish Special' Pizza kostet 11,50 €. :contentReference[oaicite:30]{index=30}",
+    "Bordeaux, Burgund, Champagne. :contentReference[oaicite:31]{index=31}",
+    "1920–1933. :contentReference[oaicite:34]{index=34}",
+    "Antipasti → Primo → Secondo → Contorno → Dolce. :contentReference[oaicite:37]{index=37}",
+    "Seit 2010. :contentReference[oaicite:38]{index=38}",
+    "Beispiel: Carne Asada Taco 3,50 € und Classic Burrito 8,00 €. :contentReference[oaicite:39]{index=39}"
+    ]
+}

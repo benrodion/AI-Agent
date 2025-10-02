@@ -1,0 +1,44 @@
+{
+    "questions": [
+        "Welche Restaurants führen Risotto auf der Karte und wie unterscheiden sich die günstigsten und teuersten Risotto-Preise dort?",
+        "Welche UNESCO-Auszeichnungen werden in den Dokumenten für die französische Esskultur und die mexikanische Küche genannt und aus welchem Jahr stammen sie?",
+        "Nenne drei Grundpfeiler der mexikanischen 'heiligen Fünf' und setze sie in Beziehung zu zwei Grundpfeilern der italienischen Küche.",
+        "Vergleiche die Preise: Prosecco (Il sogno de Anton) vs. französischer Rotwein (Chez Anton).",
+        "Welche Taco-Varianten bietet Tönis Tacos an, und welches Grundelement laut Beschreibung der mexikanischen Küche steckt in allen?",
+        "Welche zwei italienischen Desserts gelten als typisch laut Küchenbeschreibung und findest du beide auf der Karte von Il sogno de Anton?",
+        "Vergleiche die Mineralwasser-Preise und -Gebinde bei Anton's Pizza, Chez Anton und Il sogno de Anton.",
+        "Welche regionalen Schwerpunkte werden für die Provence (Frankreich) und Norditalien genannt?",
+        "Welche Heißgetränke (Kaffeevarianten) finden sich über alle Restaurantkarten hinweg und wie variieren die Preise?",
+        "Welche traditionelle französische Gemüsespeise wird im Länderdokument beschrieben und taucht auch auf der Menükarte auf (mit Preis)?",
+        "Kommt Panna Cotta im italienischen Küchenporträt vor und steht es auch auf der Karte von Il sogno de Anton (Preis)?",
+        "Welche Pizza-Variante bei Anton's Pizza illustriert die im Küchenporträt beschriebene Einfachheit und Herkunft der Pizza?",
+        "Welche Suppe bei Chez Anton lässt sich mit einem im italienischen Küchenkapitel genannten 'Arme-Leute'-Suppenprinzip in Beziehung setzen?",
+        "Welcher Cocktail wird dem Land Italien zugeordnet und welche italienbezogenen kulturellen Informationen stützen diesen Bezug?",
+        "Welches Käseprodukt ist zentral für eine italienische Vorspeise auf der Karte und wird auch im italienischen Küchenporträt als wichtiger Käse genannt?",
+        "Was umfasst die 'heilige Fünf' der mexikanischen Küche?",
+        "Seit wann ist das 'Gastronomische Mahl der Franzosen' UNESCO-Weltkulturerbe?",
+        "Nenne zwei Gerichte von der Karte von Tönis Tacos und ihre Preise."
+
+    ],
+    "ground_truths": [
+        "Risotto gibt es bei Anton's Pizza (z. B. ai Funghi 11,50 €, Meeresfrüchte 14,00 €) und bei Il sogno de Anton (al Tartufo Nero 28,00 €). Damit ist das günstigste Risotto 11,50 € (Anton’s), das teuerste 28,00 € (Il sogno). ",
+        "UNESCO 2010: das 'Gastronomische Mahl der Franzosen' (immaterielles Kulturerbe) und die mexikanische Küche (als erste Küche überhaupt immaterielles Kulturerbe). Beide 2010, aber unterschiedliche Gegenstände der Würdigung. ",
+        "Mexikos 'heilige Fünf': Mais, Bohnen, Chili (u. a.); Italiens Grundpfeiler: z. B. Pizza und Pasta/Olivenöl-Wein-Getreide-Tradition. ",
+        "Prosecco (Il sogno de Anton) 50,00 € (0,75 l) vs. Vin Rouge Français (Chez Anton) 18,00 € (0,75 l) — Prosecco deutlich teurer. ",
+        "Tönis Tacos bietet u. a. Carne Asada, Pollo, Veggie, Fish Tacos; allen gemeinsam ist das Grundelement Tortilla/Mais aus der mexikanischen Küchenbeschreibung. ",
+        "Typische italienische Desserts: Tiramisù und Panna Cotta; beide stehen bei Il sogno de Anton (Tiramisù 12,00 €, Panna Cotta 11,00 €). ",
+        "Anton’s: Mineralwasser 0,5 l für 2,50 €; Chez Anton: Eau minérale 0,5 l für 2,50 €; Il sogno de Anton: Acqua Minerale 0,75 l für 5,00 €. ",
+        "Provence: Olivenöl, Kräuter, mediterranes Gemüse; Norditalien: Butter, Sahne und Reis (Risotto) dominieren. ",
+        "Heißgetränke: Espresso bei Anton’s (2,00 €), Chez Anton (2,00 €), Il sogno (3,50 €); Cappuccino bei Anton’s (3,00 €) und Chez Anton (3,00 €); Café de Olla bei Tönis (3,00 €). ",
+        "Ratatouille als provenzalische Gemüsespeise wird beschrieben und steht bei Chez Anton als 'Ratatouille de la Meute' für 12,00 € auf der Karte. ",
+        "Ja: Panna Cotta ist im italienischen Porträt ein typisches Dessert und steht bei Il sogno de Anton für 11,00 € auf der Karte. ",
+        "Die Pizza Margherita bei Anton’s (Tomate, Mozzarella, Basilikum) illustriert die Einfachheit/Tradition der italienischen Küche und die Pizza-Herkunft aus Neapel. ",
+        "Chez Anton listet 'Soupe du Terrier' (hausgemachte Suppe); im italienischen Porträt wird 'Ribollita' (Brotsuppe) als Beispiel der 'cucina povera' genannt — beide verweisen auf einfache, traditionelle Suppenküche. ",
+        "Der Negroni wird dem Land Italien zugeordnet; das Italien-Länderdokument unterstreicht Italiens kulturellen Einfluss (Renaissance, Dolce Vita), der auch in Getränkekultur sichtbar ist. ",
+        "Mozzarella di Bufala ist zentral für Insalata Caprese Bufalo & Bau' bei Il sogno; im italienischen Porträt wird Mozzarella di Bufala als wichtiger Käse erwähnt. ",
+        "Mais, Bohnen, Chili, Kürbis, Kakao. :contentReference[oaicite:32]{index=32}",
+        "Seit 2010. :contentReference[oaicite:38]{index=38}",
+        "Beispiel: Carne Asada Taco 3,50 € und Classic Burrito 8,00 €. :contentReference[oaicite:39]{index=39}"
+
+    ]
+}
