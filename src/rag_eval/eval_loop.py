@@ -6,13 +6,13 @@ import agent.main as main
 importlib.reload(main)  # forces reload right now
 
 
-def rag_loop_agent() -> list[EvalContainer]:
+def rag_loop_agent(path = "data/agent_eval_questions.json") -> list[EvalContainer]:
     eval_conts = []
     token_usage = []
     failures = []
     tool_calls = []
     tool_args = []
-    queries, gts = query_gt_extractor(path="data/agent_eval_questions.json", tokenize=False) # get questions and ground truth
+    queries, gts = query_gt_extractor(path=path, tokenize=False) # get questions and ground truth
     # print("lens:", len(queries), len(gts))  # sanity check
     for idx, (q, gt) in enumerate(zip(queries, gts)): # maybe we can do without zip and do not need to iterate over gts because I only need idx to access the right gt
         full_result = main.food_agent(user_input=q)
