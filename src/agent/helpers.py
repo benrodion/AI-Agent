@@ -129,7 +129,7 @@ def execute_agentic_rag(question: str, top_k: int):
         anchors=docs,
         document_store=document_store,
         m=2,
-        same_parent_only=True
+        same_parent_only=False
     )
 
     retrieved_context.append([d.content for d in docs])
