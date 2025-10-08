@@ -84,10 +84,22 @@ tools: List[Dict[str, Any]] = [
                     },
                     "top_k":{
                         "type": "number",
+                        "minimum": 1,
+                        "maximum": 15,
                         "description": "The amount of documents to retrieve in order to create an answer with high answer and retrieval precision."
+                    },
+                    "m": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 5,
+                        "description": "The amount of neighbours to add per anchor (NeighbourExpander). Determines the amount of neighbours the LLM sees in addition to the retrieve chunk before creating an answer."
+                    },
+                    "same_parent_only":{
+                        "type": "boolean",
+                        "description": "If true, only neighbours from the same parent document can be retrieved."
                     }
                 },
-                "required": ["question", "top_k"],
+                "required": ["question", "top_k", "m", "same_parent_only"],
                 "additionalProperties": False
             },
             "strict": True

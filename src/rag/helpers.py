@@ -10,45 +10,115 @@ def expand_with_precomputed_neighbors(
     m: max neighbors per anchor to add
     same_parent_only: keep neighbors from same parent doc/section (optional but recommended)
     """
-    # Keep original order for anchors
-    expanded = {d.id: d for d in anchors}
 
-    # Collect neighbor IDs to fetch
-    want_ids = []
+    # Keep anchors by id (preserve order later)
+    expanded = {d.id: d for d in anchors}
+    anchor_ids = set(expanded.keys())
+
+    # Collect neighbor IDs to fetch (unique)
+    want_ids = set()
     for a in anchors:
-        nn_ids = a.meta.get("nn_ids", [])[:m]
-        if same_parent_only:
-            pid = a.meta.get("parent_id")
-            nn_ids = [nid for nid in nn_ids if pid is None or pid == pid]  # keep as-is; parent filter later
-        # Exclude duplicates & already present ids
+        nn_ids = (a.meta or {}).get("nn_ids", [])[:m]
         for nid in nn_ids:
-            if nid not in expanded and nid not in want_ids:
-                want_ids.append(nid)
+            if nid not in anchor_ids:
+                want_ids.add(nid)
 
     if not want_ids:
-        return list(expanded.values())
+        return list(anchors)
 
-    # Try to fetch by id (Haystack v2 stores differ; support both common ways)
-    neighbors = []
+    # Fetch neighbors by id (API varies slightly across stores)
     try:
-        # Preferred, if available
-        neighbors = document_store.get_documents_by_id(ids=want_ids)
+        neighbors = document_store.get_documents_by_id(ids=list(want_ids))
     except Exception:
-        # Fallback via filter
-        try:
-            neighbors = document_store.filter_documents(filters={"id": {"$in": want_ids}})
-        except Exception:
-            neighbors = []
+        neighbors = document_store.filter_documents(filters={"id": {"$in": list(want_ids)}})
 
-    # Optional: enforce same-parent at fetch time
+    # Optional: only keep neighbors from the same parent_id as their *anchor set*
+    if same_parent_only:
+        # if anchors disagree on parent_id, we skip this constraint
+        anchor_parents = { (a.meta or {}).get("parent_id") for a in anchors }
+        if len(anchor_parents) == 1:
+            only_pid = next(iter(anchor_parents))
+            neighbors = [n for n in neighbors if (n.meta or {}).get("parent_id") == only_pid]
+
+    # Merge (don’t override anchors)
     for n in neighbors:
-        if same_parent_only:
-            a0 = anchors[0]
-            pid_anchor = a0.meta.get("parent_id")
-            if pid_anchor is not None and n.meta.get("parent_id") != pid_anchor:
-                continue
         expanded.setdefault(n.id, n)
 
-    # Return anchors first, then added neighbors (stable order)
-    ordered = anchors + [d for d_id, d in expanded.items() if d_id not in {a.id for a in anchors}]
-    return ordered
+    # Keep original anchors first, then the newly added neighbors (stable)
+    return anchors + [d for d_id, d in expanded.items() if d_id not in anchor_ids]
+
+
+
+from typing import List, Dict, Any, Optional
+from haystack import component, Document
+
+@component
+class NeighborExpander:
+    """
+    Expands retriever hits with precomputed neighbors stored in doc.meta['nn_ids'].
+    Returns anchors first, then newly added neighbors (deduped).
+    """
+    def __init__(self, document_store, m: int = 2, same_parent_only: bool = True):
+        self.document_store = document_store
+        self.default_m = m
+        self.default_same_parent_only = same_parent_only
+    
+    @component.output_types(documents=List[Document])  # Add output type hint
+    def run(
+        self, 
+        documents: List[Document],
+        m: Optional[int] = None,  
+        same_parent_only: Optional[bool] = None, 
+        ) -> Dict[str, Any]:
+        if not documents:
+            return {"documents": []}
+        
+        # use runtime params if provided, else fall back to constructor default
+        m = self.default_m if m is None else m
+        same_parent_only = self.default_same_parent_only if same_parent_only is None else same_parent_only
+        
+        # Keep anchors in order; fast dedupe set
+        expanded_by_id = {d.id: d for d in documents}
+        anchor_ids = set(expanded_by_id.keys())
+        
+        # Collect unique neighbor IDs to fetch
+        want_ids = set()
+        for a in documents:
+            nn_ids = (a.meta or {}).get("nn_ids", [])[:m]
+            for nid in nn_ids:
+                if nid not in anchor_ids:
+                    want_ids.add(nid)
+        
+        neighbors: List[Document] = []
+        if want_ids:
+            try:
+                neighbors = self.document_store.filter_documents(
+                    filters={"field": "id", "operator": "in", "value": list(want_ids)}
+                )
+            except (AttributeError, NotImplementedError, TypeError):  # More specific
+                neighbors = self.document_store.filter_documents(
+                    filters={"id": {"$in": list(want_ids)}}
+                )
+        
+        # Optional same-parent filtering
+        if same_parent_only:
+            anchor_parents = {(a.meta or {}).get("parent_id") for a in documents}
+            if len(anchor_parents) == 1:
+                only_pid = next(iter(anchor_parents))
+                if only_pid is not None:  # Add None check
+                    neighbors = [
+                        n for n in neighbors 
+                        if (n.meta or {}).get("parent_id") == only_pid
+                    ]
+        
+        # Merge neighbors
+        for n in neighbors:
+            expanded_by_id.setdefault(n.id, n)
+        
+        # Anchors first, then newly added neighbors
+        ordered = documents + [
+            d for did, d in expanded_by_id.items() 
+            if did not in anchor_ids
+        ]
+        
+        return {"documents": ordered}
