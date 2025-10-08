@@ -66,3 +66,4 @@ def precompute_and_store_neighbors(m: int = 2):
 
     document_store.write_documents(docs, policy=DuplicatePolicy.OVERWRITE)
     print(f"Stored nn_ids for {len(docs)} chunks.")
+

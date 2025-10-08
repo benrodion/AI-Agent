@@ -8,6 +8,7 @@ from haystack.utils.auth import Secret
 from haystack import Pipeline
 from rag.indexing import embedding_model, document_store
 from haystack.components.preprocessors import DocumentCleaner
+from rag.helpers import NeighborExpander
 
 
 # for client
@@ -52,6 +53,11 @@ basic_rag.add_component("query_embedder",
                         SentenceTransformersTextEmbedder(model=embedding_model, progress_bar=True))
 basic_rag.add_component("retriever", InMemoryEmbeddingRetriever(document_store,
                                                                 top_k=10)) 
+basic_rag.add_component("neighbor_expander", 
+                        NeighborExpander(
+    document_store=document_store, m=2, same_parent_only=True   
+    )
+)
 basic_rag.add_component("prompt_builder", PromptBuilder(template=template))
 basic_rag.add_component("llm", AzureOpenAIGenerator(
     azure_endpoint=base_endpoint,
@@ -60,7 +66,9 @@ basic_rag.add_component("llm", AzureOpenAIGenerator(
     azure_deployment=model
 ))
 
+
 basic_rag.connect("query_embedder", "retriever.query_embedding")
-basic_rag.connect("retriever", "prompt_builder.documents")
-basic_rag.connect("prompt_builder", "llm")
+basic_rag.connect("retriever.documents", "neighbor_expander.documents") 
+basic_rag.connect("neighbor_expander.documents", "prompt_builder.documents")
+basic_rag.connect("prompt_builder.prompt", "llm.prompt")
 

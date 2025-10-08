@@ -86,9 +86,10 @@ def execute_plain_rag(question):
 
     return serialized
 
-from rag.helpers import expand_with_precomputed_neighbors
 from rag.indexing import document_store
-def execute_agentic_rag(question: str, top_k: int):
+def execute_agentic_rag(question: str, top_k: int,
+                        m: int | None = None, 
+                        same_parent_only: bool | None = None):
     """
     A modified version of execute_plain_rag. 
 
@@ -112,27 +113,26 @@ def execute_agentic_rag(question: str, top_k: int):
             # 2) Override retriever-default for `top_k` here
             "retriever": {"top_k": top_k},
 
+            #3) Override default for `m` and `same_parent_only` here 
+            "neighbor_expander": {
+                **({"m": m} if m is not None else {}),
+                **({"same_parent_only": same_parent_only} if same_parent_only is not None else {})
+            },
+
             # 3) Provide template vars to the prompt builder
             "prompt_builder": {"question": question},
         },
-        include_outputs_from="retriever",
+        include_outputs_from=["neighbor_expander"],
     )
+
+
 
     print(f"Top K is: {top_k}")     # for tracking 
     generated_answers.append(result["llm"]["replies"][0])
+    expanded_docs = result["neighbor_expander"]["documents"]
 
-     # --- NEW: expand with neighbors
 
-    docs = result["retriever"]["documents"]
-
-    expanded_docs = expand_with_precomputed_neighbors(
-        anchors=docs,
-        document_store=document_store,
-        m=2,
-        same_parent_only=True
-    )
-
-    retrieved_context.append([d.content for d in docs])
+    retrieved_context.append([d.content for d in expanded_docs])
 
     # --- NEW: try to extract token usage
     usage = None

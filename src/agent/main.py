@@ -122,7 +122,8 @@ def food_agent(
                     llm.update_tool_call(
                         call_id=call.id,
                         status="succeeded",
-                        meta={"top_k": args.get("top_k"), "retrieved_docs": len(result.get("documents", [])) if isinstance(result, dict) else None},
+                        meta={"top_k": args.get("top_k"), "retrieved_docs": len(result.get("documents", [])) if isinstance(result, dict) else None,
+                              "m": args.get("m"), "same_parent_only": args.get("same_parent_only")},
                         result_summary=("ok" if not isinstance (result, dict) else result.get("status") or "ok")
                     )
 
