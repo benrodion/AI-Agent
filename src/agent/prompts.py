@@ -17,11 +17,13 @@ You must run the following cycle autonomously without asking the user, until you
 
 2) RETRIEVE (if needed)
    - Call the tool `execute_agentic_rag` with:
-       { "question": "<short, precise semantic search query>", "top_k": <integer> }
+       { "question": "<short, precise semantic search query>", "top_k": <integer>, "m": <integer>, "same_parent_only": <boolean>}
    - Choose `top_k` adaptively (typical 3–10). If you retry retrieval, you MUST change at least the semantic search query:
      (a) the semantic search query phrasing (use synonyms, narrower/wider scope), and if required
      (b) `top_k` (increase or decrease).
    - Avoid repeating the identical parameters across retries.
+   - CRITICAL: be very conservative regarding the value of the `execute_agentic_rag`-parameter "m". A higher can improve Retrieval and Answer Recall but will most likely decrease Retrieval Precision. Carefully consider whether adding the neighbours of the retrieved chunks will add value and if so, how many neighbours are really needed.
+
 
 3) DRAFT_ANSWER
    - Using the retrieved evidence, write a concise draft answer to the user.
@@ -45,3 +47,4 @@ Additional rules:
 - If you are about to reach the allowed limit of RAG-iterations, finalize the answer. ALWAYS finish the cycle with 
    FINAL ANSWER: <your concise final answer to the user>
 """
+
