@@ -39,6 +39,7 @@ You must run the following cycle autonomously without asking the user, until you
    - If the draft is sufficient, output exactly one line:
        FINAL_ANSWER: <your concise final answer to the user>
      Do not include the words PLAN, DRAFT_ANSWER, or CRITIQUE in the final output.
+   - IMPORTANT: when you struggle with a question/do not immediately find the chunks to answer the question, please make use of the amount of thinking steps and RAG-loops available. Do NOT give up before you either found the relevant chunks or reached the limit of your thinking steps.
 
 Additional rules:
 - Do not ask the user for clarification inside the loop; rely on retrieval and your own refinement.
