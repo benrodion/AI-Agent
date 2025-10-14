@@ -140,7 +140,7 @@ print(len(total_tokens))
 print(df_tools.shape)
 
 
-### ERROR OCCURS HERE
+
 df_agentic = pd.DataFrame(df_data_agentic).reset_index(drop=True)
 
 # Falls df_agentic ebenfalls 40 Zeilen hat: direkt concat

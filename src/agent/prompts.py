@@ -40,6 +40,7 @@ You must run the following cycle autonomously without asking the user, until you
        FINAL_ANSWER: <your concise final answer to the user>
      Do not include the words PLAN, DRAFT_ANSWER, or CRITIQUE in the final output.
 
+
 Additional rules:
 - Do not ask the user for clarification inside the loop; rely on retrieval and your own refinement.
 - Be precise with currency and item names when present in the sources.

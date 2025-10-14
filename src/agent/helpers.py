@@ -164,13 +164,13 @@ import re
 def tool_call_parser(tool_calls: list[list[dict]]) -> list:
     """
     Input per question: a list of tool-call dicts (0..n).
-    Output per question: THREE dicts (name_*, query_*, top_k_*) with 5 slots each.
-    Final output: flat list like [name_dict, query_dict, topk_dict,  name_dict, query_dict, topk_dict, ...]
+    Output per question: THREE dicts (name_*, query_*, top_k_*, m_*) with 5 slots each.
+    Final output: flat list like [name_dict, query_dict, topk_dict,  name_dict, query_dict, topk_dict,m_dict ...]
     """
     all_tools = []
 
     for tool_call in tool_calls:
-        tool_name, query, top_k = {}, {}, {}
+        tool_name, query, top_k, m = {}, {}, {}, {}
 
         for counter in range(5):
             if counter < len(tool_call):
@@ -179,29 +179,31 @@ def tool_call_parser(tool_calls: list[list[dict]]) -> list:
                 tool_name[f"name_{counter}"]  = item.get("name")
                 query[f"query_{counter}"]     = args.get("question")
                 top_k[f"top_k_{counter}"]     = args.get("top_k")
+                m[f"m_{counter}"]               = args.get("m")
             else:
                 tool_name[f"name_{counter}"]  = None
                 query[f"query_{counter}"]     = None
                 top_k[f"top_k_{counter}"]     = None
+                m[f"m_{counter}"]              = None
 
         # IMPORTANT: extend ONCE per question (not inside the loop!)
-        all_tools.extend([tool_name, query, top_k])
+        all_tools.extend([tool_name, query, top_k, m])
 
     return all_tools
 
 
 def triplets_to_df(obj):
-    """obj is the flat [name, query, topk, name, query, topk, ...] list."""
-    if len(obj) % 3 != 0:
+    """obj is the flat [name, query, topk, name, query, top_k, m ...] list."""
+    if len(obj) % 4 != 0:
         raise ValueError(f"Length {len(obj)} not divisible by 3.")
 
     rows = []
-    for i in range(0, len(obj), 3):
-        name_d, query_d, topk_d = obj[i], obj[i+1], obj[i+2]
+    for i in range(0, len(obj), 4):
+        name_d, query_d, topk_d, m_d = obj[i], obj[i+1], obj[i+2], obj[i+3]
         row = {}
-        for d in (name_d, query_d, topk_d):
+        for d in (name_d, query_d, topk_d, m_d):
             row.update({k: v for k, v in d.items()
-                        if k.startswith(("name_", "query_", "top_k_"))})
+                        if k.startswith(("name_", "query_", "top_k_", "m_"))})
         rows.append(row)
 
     df = pd.DataFrame(rows)
@@ -211,7 +213,7 @@ def triplets_to_df(obj):
         cols = [c for c in df.columns if re.match(rf"^{re.escape(prefix)}_\d+$", c)]
         return sorted(cols, key=lambda c: int(re.search(r'(\d+)$', c).group(1)))
 
-    expected = order("name") + order("query") + order("top_k")
+    expected = order("name") + order("query") + order("top_k") + order("m")
     for col in expected:
         if col not in df:
             df[col] = None
