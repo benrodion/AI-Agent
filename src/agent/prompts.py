@@ -16,7 +16,7 @@ You must run the following cycle autonomously without asking the user, until you
    - Briefly plan how to answer the user’s question.
 
 2) RETRIEVE (if needed)
-   - IMPORTANT: in the first RAG-call, do not retrieve any neighbors, i.e. set m = 0. Instead, retrieve a higher number of chunks (through `top_k`) and identify which are relevant. Then call RAG a second time and get the m-neighbors of the most important chunks.
+   - IMPORTANT: ALWAYS retrieve AT LEAST 2 neighbors. I.e. in EACH call of `execute_agentic_rag`, set the parameter `m` to AT LEAST 2:
    - Call the tool `execute_agentic_rag` with:
        { "question": "<short, precise semantic search query>", "top_k": <integer>, "m": <integer>, "same_parent_only": <boolean>}
    - Choose `top_k` adaptively (typical 3–10). If you retry retrieval, you MUST change at least the semantic search query:
