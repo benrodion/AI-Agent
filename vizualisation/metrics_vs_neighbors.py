@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 # --- Daten laden ---
-df = pd.read_csv("../df_agentic.csv")
+df = pd.read_csv("df_agentic.csv")
 
 # --- RAG-Aufrufe je Frage zählen (nicht-leere 'name_'-Spalten) ---
 name_cols = [c for c in df.columns if str(c).startswith("name_")]
@@ -42,6 +42,8 @@ for i, (label, col) in enumerate(metrics):
 
 plt.suptitle("Verteilung der Metriken nach Gesamtzahl gezogener Nachbarn (Σ m_i)")
 plt.tight_layout(rect=[0, 0, 1, 0.96])
-out2 = Path("/mnt/data/metrics_boxplots_vs_total_m_neighbors.png")
-plt.savefig(out2, bbox_inches="tight", dpi=150)
-print(f"Gespeichert: {out2}")
+plt.show()
+#out2 = Path("/mnt/data/metrics_boxplots_vs_total_m_neighbors.png")
+#plt.savefig(out2, bbox_inches="tight", dpi=150)
+#print(f"Gespeichert: {out2}")
+
